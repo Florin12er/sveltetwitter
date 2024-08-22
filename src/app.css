@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+}
+
+.dark {
+  --color-primary: #60a5fa;
+  --color-primary-dark: #3b82f6;
+}
+
+body {
+  @apply bg-white dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-200;
+}
+
+/* Add any other global styles here */
