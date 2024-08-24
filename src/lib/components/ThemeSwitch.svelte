@@ -49,10 +49,7 @@
   }
 </script>
 
-<div class="form-control w-full max-w-xs">
-  <label class="label">
-    <span class="label-text">Choose theme</span>
-  </label>
+<div class="form-control w-full max-w-xs text-base-content">
   <select 
     class="select select-bordered"
     bind:value={currentTheme}
