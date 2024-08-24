@@ -9,6 +9,7 @@
 	let showEditor = false;
 	let characterCount = 0;
 	const MAX_CHARACTERS = 280; // Twitter-like character limit
+    const apiKey = import.meta.env.VITE_TINYMCE_API_KEY;
 
 	onMount(() => {
 		setTimeout(
@@ -78,7 +79,7 @@
 		<div class="p-4">
 			{#if showEditor}
 				<Editor
-					apiKey="9wkcmud6gyo8zfriepdmbtx85ebn8z82hloo7f5sznojsmuq"
+					apiKey={apiKey}
 					on:change={handleEditorChange}
 					{conf}
 				/>
