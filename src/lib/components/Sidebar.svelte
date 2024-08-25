@@ -55,6 +55,9 @@
     >
       Post
     </button>
+    <a href="/login" class="btn btn-outline btn-primary w-full text-lg py-3">
+      Login
+    </a>
     <ThemeSwitch />
   </div>
 </div>
