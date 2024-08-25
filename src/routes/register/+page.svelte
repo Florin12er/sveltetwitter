@@ -1,15 +1,42 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '@iconify/svelte';
+  import { token } from '$lib/stores/authStore';
 
   let username = '';
   let email = '';
   let password = '';
   let confirmPassword = '';
+  let errorMessage = '';
 
-  function handleRegister() {
-    console.log('Register attempted with:', { username, email, password, confirmPassword });
-    goto('/login');
+  async function handleRegister() {
+    if (password !== confirmPassword) {
+      errorMessage = 'Passwords do not match';
+      return;
+    }
+
+    try {
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Registration successful:', data);
+        token.set(data.token); // Store the token
+        goto('/complete-profile');
+      } else {
+        errorMessage = data.error || 'Registration failed';
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      errorMessage = 'An error occurred during registration';
+    }
   }
 </script>
 
@@ -21,6 +48,11 @@
           Create your account
         </h2>
       </div>
+      {#if errorMessage}
+        <div class="bg-error text-error-content p-3 rounded-md">
+          {errorMessage}
+        </div>
+      {/if}
       <form class="mt-8 space-y-6" on:submit|preventDefault={handleRegister}>
         <div class="rounded-md shadow-sm -space-y-px">
           <div>

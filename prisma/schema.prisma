@@ -1,20 +1,99 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id    String @id
-  name  String
-  email String
+    id             String   @id @default(uuid())
+    username       String   @unique
+    email          String   @unique
+    passwordHash   String
+    fullName       String?
+    bio            String?
+    location       String?
+    website        String?
+    profilePicture String?
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    tweets          Tweet[]
+    likes           Like[]
+    retweets        Retweet[]
+    responses       Response[]
+    followers       Follow[]   @relation("Follower")
+    following       Follow[]   @relation("Following")
+    resetCode       String?
+    resetCodeExpiry DateTime?
+}
+
+model Tweet {
+    id        String   @id @default(uuid())
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    authorId String
+    author   User   @relation(fields: [authorId], references: [id])
+
+    likes     Like[]
+    retweets  Retweet[]
+    responses Response[]
+}
+
+model Follow {
+    id          String   @id @default(uuid())
+    followerId  String
+    followingId String
+    createdAt   DateTime @default(now())
+
+    follower  User @relation("Follower", fields: [followerId], references: [id])
+    following User @relation("Following", fields: [followingId], references: [id])
+
+    @@unique([followerId, followingId])
+}
+
+model Like {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    tweetId String
+    tweet   Tweet  @relation(fields: [tweetId], references: [id])
+
+    @@unique([userId, tweetId])
+}
+
+model Retweet {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    tweetId String
+    tweet   Tweet  @relation(fields: [tweetId], references: [id])
+
+    @@unique([userId, tweetId])
+}
+
+model Response {
+    id        String   @id @default(uuid())
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    tweetId String
+    tweet   Tweet  @relation(fields: [tweetId], references: [id])
 }

@@ -1,13 +1,15 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { user, logout } from '$lib/stores/authStore';
   import ThemeSwitch from './ThemeSwitch.svelte';
   import PostModal from './PostModal.svelte';
   import Icon from '@iconify/svelte';
+  import { goto } from '$app/navigation';
 
-  const menuItems = [
+  $: menuItems = [
     { icon: 'mdi:home', label: 'Home', href: '/' },
     { icon: 'mdi:magnify', label: 'Explore', href: '/explore' },
-    { icon: 'mdi:account', label: 'Profile', href: '/profile' },
+    ...$user ? [{ icon: 'mdi:account', label: 'Profile', href: '/profile' }] : [],
   ];
 
   let showPostModal = false;
@@ -24,6 +26,11 @@
     console.log('New tweet:', event.detail.content);
     // Here you would typically send the tweet to your backend
     closePostModal();
+  }
+
+  function handleLogout() {
+    logout();
+    goto('/login');
   }
 </script>
 
@@ -49,15 +56,24 @@
     </ul>
   </nav>
   <div class="mt-6 space-y-4">
-    <button
-      on:click={openPostModal}
-      class="btn btn-primary w-full text-lg py-3"
-    >
-      Post
-    </button>
-    <a href="/login" class="btn btn-outline btn-primary w-full text-lg py-3">
-      Login
-    </a>
+    {#if $user}
+      <button
+        on:click={openPostModal}
+        class="btn btn-primary w-full text-lg py-3"
+      >
+        Post
+      </button>
+      <button on:click={handleLogout} class="btn btn-outline btn-primary w-full text-lg py-3">
+        Logout
+      </button>
+    {:else}
+      <a href="/login" class="btn btn-primary w-full text-lg py-3">
+        Login
+      </a>
+      <a href="/register" class="btn btn-outline btn-primary w-full text-lg py-3">
+        Register
+      </a>
+    {/if}
     <ThemeSwitch />
   </div>
 </div>
@@ -75,24 +91,39 @@
         <span class="text-xs mt-1">{item.label}</span>
       </a>
     {/each}
-    <button
-      on:click={openPostModal}
-      class="btn btn-primary btn-circle"
-      aria-label="Create new post"
-    >
-      <Icon icon="mdi:plus" width="24" height="24" />
-    </button>
+    {#if $user}
+      <button
+        on:click={openPostModal}
+        class="btn btn-primary btn-circle"
+        aria-label="Create new post"
+      >
+        <Icon icon="mdi:plus" width="24" height="24" />
+      </button>
+    {:else}
+      <a
+        href="/login"
+        class="flex flex-col items-center p-2 hover:text-primary"
+      >
+        <Icon icon="mdi:login" width="24" height="24" />
+        <span class="text-xs mt-1">Login</span>
+      </a>
+    {/if}
     <div class="dropdown dropdown-top dropdown-end">
       <button 
         class="btn btn-ghost btn-circle"
         aria-haspopup="true"
         aria-expanded="false"
       >
-        <Icon icon="mdi:palette" width="24" height="24" />
+        <Icon icon="mdi:menu" width="24" height="24" />
       </button>
-      <div class="dropdown-content z-[1] mb-2 mr-2">
-        <ThemeSwitch />
-      </div>
+      <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+        <li><ThemeSwitch /></li>
+        {#if $user}
+          <li><button on:click={handleLogout}>Logout</button></li>
+        {:else}
+          <li><a href="/register">Register</a></li>
+        {/if}
+      </ul>
     </div>
   </nav>
 </div>

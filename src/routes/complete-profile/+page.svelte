@@ -1,25 +1,45 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '@iconify/svelte';
+  import { token } from '$lib/stores/authStore';
+  import { jwtDecode } from 'jwt-decode';
 
   let fullName = '';
-  let username = '';
   let bio = '';
   let location = '';
-  let email = '';
   let website = '';
-  let profilePicture: File | null = null;
+  let errorMessage = '';
 
-  function handleProfileCompletion() {
-    // Here you would typically send this data to your backend
-    console.log('Profile completion attempted with:', { fullName, username, bio, location, email, website, profilePicture });
-    goto('/'); // Redirect to home page after profile completion
-  }
+  // Decode the token to get the userId
+  $: userId = $token ? jwtDecode($token).userId : null;
 
-  function handleFileInput(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.files) {
-      profilePicture = target.files[0];
+  async function handleProfileCompletion() {
+    if (!userId) {
+      errorMessage = 'User not authenticated';
+      return;
+    }
+
+    try {
+      const response = await fetch('/complete-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${$token}`
+        },
+        body: JSON.stringify({ fullName, bio, location, website }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Profile completed successfully:', data);
+        goto('/'); // Redirect to home page or user's profile
+      } else {
+        errorMessage = data.error || 'Failed to complete profile';
+      }
+    } catch (error) {
+      console.error('Profile completion error:', error);
+      errorMessage = 'An error occurred while completing the profile';
     }
   }
 </script>
@@ -32,6 +52,11 @@
           Complete Your Profile
         </h2>
       </div>
+      {#if errorMessage}
+        <div class="bg-error text-error-content p-3 rounded-md">
+          {errorMessage}
+        </div>
+      {/if}
       <form class="mt-8 space-y-6" on:submit|preventDefault={handleProfileCompletion}>
         <div class="rounded-md shadow-sm space-y-4">
           <div>
@@ -44,18 +69,6 @@
               bind:value={fullName}
               class="mt-1 block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm placeholder-base-content/60 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label for="username" class="block text-sm font-medium text-base-content">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              bind:value={username}
-              class="mt-1 block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm placeholder-base-content/60 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-              placeholder="johndoe"
             />
           </div>
           <div>
@@ -81,18 +94,6 @@
             />
           </div>
           <div>
-            <label for="email" class="block text-sm font-medium text-base-content">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              bind:value={email}
-              class="mt-1 block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm placeholder-base-content/60 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
             <label for="website" class="block text-sm font-medium text-base-content">Website (Optional)</label>
             <input
               id="website"
@@ -101,17 +102,6 @@
               bind:value={website}
               class="mt-1 block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm placeholder-base-content/60 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               placeholder="https://yourwebsite.com"
-            />
-          </div>
-          <div>
-            <label for="profilePicture" class="block text-sm font-medium text-base-content">Profile Picture</label>
-            <input
-              id="profilePicture"
-              name="profilePicture"
-              type="file"
-              accept="image/*"
-              on:change={handleFileInput}
-              class="mt-1 block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm text-base-content focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
             />
           </div>
         </div>

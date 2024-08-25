@@ -1,13 +1,37 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import Icon from '@iconify/svelte';
+  import {login} from '$lib/stores/authStore';
+  import { jwtDecode } from 'jwt-decode';
 
   let username = '';
   let password = '';
+  let errorMessage = '';
 
-  function handleLogin() {
-    console.log('Login attempted with:', { username, password });
-    goto('/');
+  async function handleLogin() {
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Login successful:', data);
+        const decodedToken = jwtDecode(data.token) as { userId: string };
+        login(data.token, { id: decodedToken.userId, username });
+        goto('/'); // Redirect to home page
+      } else {
+        errorMessage = data.error || 'Login failed';
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      errorMessage = 'An error occurred during login';
+    }
   }
 </script>
 
@@ -19,6 +43,11 @@
           Sign in to your account
         </h2>
       </div>
+      {#if errorMessage}
+        <div class="bg-error text-error-content p-3 rounded-md">
+          {errorMessage}
+        </div>
+      {/if}
       <form class="mt-8 space-y-6" on:submit|preventDefault={handleLogin}>
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
@@ -54,6 +83,26 @@
                 placeholder="Password"
               />
             </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input
+              id="remember-me"
+              name="remember-me"
+              type="checkbox"
+              class="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded"
+            />
+            <label for="remember-me" class="ml-2 block text-sm text-base-content">
+              Remember me
+            </label>
+          </div>
+
+          <div class="text-sm">
+            <a href="/reset-request" class="font-medium text-primary hover:text-primary-focus">
+              Forgot your password?
+            </a>
           </div>
         </div>
 
