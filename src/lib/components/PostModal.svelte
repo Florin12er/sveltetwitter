@@ -20,6 +20,7 @@
                 content: editorContent
             });
             editorContent = '';
+            characterCount = 0;
             closeModal();
         }
     }
@@ -41,6 +42,8 @@
             <RichTextEditor
                 on:change={handleEditorChange}
                 maxCharacters={MAX_CHARACTERS}
+                initialContent={editorContent}
+                height={200}
             />
 
             <div class="mt-2 flex justify-end space-x-2">

@@ -12,6 +12,7 @@
     let editorContent = initialContent;
     let showEditor = false;
     let characterCount = 0;
+    let editor: any;
 
     $: characterCount = editorContent.replace(/<[^>]*>/g, '').length;
 
@@ -21,9 +22,17 @@
         }, 100);
     });
 
-    function handleEditorChange(event: CustomEvent) {
-        editorContent = event.detail.content;
-        dispatch('change', { content: editorContent, characterCount });
+    function handleEditorInit(event: CustomEvent) {
+        editor = event.detail.editor;
+        editor.setContent(initialContent);
+    }
+
+    function handleEditorChange() {
+        if (editor) {
+            editorContent = editor.getContent();
+            characterCount = editorContent.replace(/<[^>]*>/g, '').length;
+            dispatch('change', { content: editorContent, characterCount });
+        }
     }
 
     let conf = {
@@ -56,9 +65,9 @@
 {#if showEditor}
     <Editor
         apiKey={apiKey}
+        on:init={handleEditorInit}
         on:change={handleEditorChange}
         {conf}
-        initialValue={initialContent}
     />
 {/if}
 

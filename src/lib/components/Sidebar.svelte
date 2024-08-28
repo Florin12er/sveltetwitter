@@ -4,6 +4,7 @@
   import ThemeSwitch from './ThemeSwitch.svelte';
   import PostModal from './PostModal.svelte';
   import Icon from '@iconify/svelte';
+  import { createTweet } from '$lib/api';
   import { goto } from '$app/navigation';
 
   $: menuItems = [
@@ -21,12 +22,18 @@
   function closePostModal() {
     showPostModal = false;
   }
+async function handleTweet(event: CustomEvent) {
+    try {
+        const newTweet = await createTweet(event.detail.content);
+        console.log('New tweet created:', newTweet);
+        // You might want to update your local state or trigger a refresh of the tweets list here
+        closePostModal();
+    } catch (error) {
+        console.error('Error creating tweet:', error);
+        // Handle the error (e.g., show an error message to the user)
+    }
+}
 
-  function handleTweet(event: CustomEvent) {
-    console.log('New tweet:', event.detail.content);
-    // Here you would typically send the tweet to your backend
-    closePostModal();
-  }
 
   function handleLogout() {
     logout();

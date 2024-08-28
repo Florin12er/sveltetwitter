@@ -1,22 +1,72 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { setContext } from 'svelte';
   import Tweet from '$lib/components/Tweet.svelte';
 
-  // Mock tweets data
-  const tweets = [
-    { id: 1, username: '@johndoe', content: 'Just had an amazing coffee! ☕️ #CoffeeLovers', likes: 15, retweets: 5, timestamp: '2h ago' },
-    { id: 2, username: '@janedoe', content: 'Working on a new project. Can\'t wait to share it! 🚀 #Coding', likes: 20, retweets: 8, timestamp: '3h ago' },
-    { id: 3, username: '@techguru', content: 'The future of AI is here, and it\'s mind-blowing! 🤖 #ArtificialIntelligence', likes: 50, retweets: 25, timestamp: '5h ago' },
-    { id: 4, username: '@travelbug', content: 'Just booked my next adventure! Greece, here I come! 🇬🇷 #TravelLife', likes: 30, retweets: 12, timestamp: '7h ago' },
-    { id: 5, username: '@foodielove', content: 'Made the most delicious pasta tonight. Recipe coming soon! 🍝 #FoodieLife', likes: 40, retweets: 18, timestamp: '9h ago' },
-  ];
+  export let data;
+
+  // Set the authentication status in the context
+  setContext('authenticated', data.authenticated);
+
+  let tweets: any[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  let isLoading = true;
+  let error: string | null = null;
+
+  async function fetchTweets(page: number = 1) {
+    isLoading = true;
+    try {
+      const response = await fetch(`/api/tweets?page=${page}&limit=10`);
+      if (response.ok) {
+        const data = await response.json();
+        tweets = data.tweets;
+        totalPages = data.totalPages;
+        currentPage = data.currentPage;
+      } else {
+        error = 'Failed to fetch tweets';
+      }
+    } catch (err) {
+      console.error('Error fetching tweets:', err);
+      error = 'An error occurred while fetching tweets';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(() => {
+    fetchTweets();
+  });
+
+  function loadMoreTweets() {
+    if (currentPage < totalPages) {
+      fetchTweets(currentPage + 1);
+    }
+  }
 </script>
 
 <div class="max-w-2xl mx-auto">
   <h1 class="text-3xl font-bold mb-6 text-primary">Home</h1>
   
-  <div class="space-y-4">
-    {#each tweets as tweet (tweet.id)}
-      <Tweet {...tweet} />
-    {/each}
-  </div>
+  {#if isLoading && tweets.length === 0}
+    <div class="flex justify-center items-center h-32">
+      <div class="loading loading-spinner loading-lg"></div>
+    </div>
+  {:else if error}
+    <div class="alert alert-error">{error}</div>
+  {:else}
+    <div class="space-y-4">
+      {#each tweets as tweet (tweet.id)}
+        <Tweet {...tweet} />
+      {/each}
+    </div>
+
+    {#if currentPage < totalPages}
+      <div class="mt-4 text-center">
+        <button class="btn btn-primary" on:click={loadMoreTweets}>
+          Load More
+        </button>
+      </div>
+    {/if}
+  {/if}
 </div>

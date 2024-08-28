@@ -11,7 +11,7 @@
   let errorMessage = '';
 
   // Decode the token to get the userId
-  $: userId = $token ? jwtDecode($token).userId : null;
+  $: userId = $token ? jwtDecode($token) : null;
 
   async function handleProfileCompletion() {
     if (!userId) {
