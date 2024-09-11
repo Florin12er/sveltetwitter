@@ -9,6 +9,7 @@
   export let retweets: number;
   export let timestamp: string;
   export let profilePicture: string;
+  export let isResponse: boolean = false; 
 
   $: sanitizedContent = DOMPurify.sanitize(content);
 
@@ -19,14 +20,12 @@
 
   function handleLike() {
     if ($isAuthenticated) {
-      // Implement like functionality
       console.log('Liked tweet:', id);
     }
   }
 
   function handleRetweet() {
     if ($isAuthenticated) {
-      // Implement retweet functionality
       console.log('Retweeted tweet:', id);
     }
   }
@@ -43,26 +42,28 @@
       <div class="tweet-content mb-4">
         {@html sanitizedContent}
       </div>
-      <div class="flex items-center space-x-4">
-        <button class="btn btn-sm btn-ghost" on:click={handleLike} disabled={!$isAuthenticated}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          {likes}
-        </button>
-        <button class="btn btn-sm btn-ghost" on:click={handleRetweet} disabled={!$isAuthenticated}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          {retweets}
-        </button>
-        <a href={`/tweet/${id}`} class="btn btn-sm btn-ghost">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-          Responses
-        </a>
-      </div>
+      {#if !isResponse}
+        <div class="flex items-center space-x-4">
+          <button class="btn btn-sm btn-ghost" on:click={handleLike} disabled={!$isAuthenticated}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            {likes}
+          </button>
+          <button class="btn btn-sm btn-ghost" on:click={handleRetweet} disabled={!$isAuthenticated}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            {retweets}
+          </button>
+          <a href={`/tweet/${id}`} class="btn btn-sm btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Responses
+          </a>
+        </div>
+      {/if}
     </div>
   </div>
 </div>

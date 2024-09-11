@@ -109,8 +109,6 @@
   }
 
   async function handleSaveProfile(event: CustomEvent) {
-    // Implement profile update logic here
-    // After successful update, refetch user data
     await fetchUserData();
     showEditModal = false;
   }

@@ -2,10 +2,14 @@
   import { page } from '$app/stores';
   import { user, logout } from '$lib/stores/authStore';
   import ThemeSwitch from './ThemeSwitch.svelte';
+  import SuccesModal from './SuccesModal.svelte';
   import PostModal from './PostModal.svelte';
   import Icon from '@iconify/svelte';
   import { createTweet } from '$lib/api';
   import { goto } from '$app/navigation';
+
+   let showPostModal = false;
+  let showSuccessModal = false;
 
   $: menuItems = [
     { icon: 'mdi:home', label: 'Home', href: '/' },
@@ -13,7 +17,6 @@
     ...$user ? [{ icon: 'mdi:account', label: 'Profile', href: '/profile' }] : [],
   ];
 
-  let showPostModal = false;
 
   function openPostModal() {
     showPostModal = true;
@@ -22,17 +25,23 @@
   function closePostModal() {
     showPostModal = false;
   }
-async function handleTweet(event: CustomEvent) {
+  async function handleTweet(event: CustomEvent) {
     try {
-        const newTweet = await createTweet(event.detail.content);
-        console.log('New tweet created:', newTweet);
-        // You might want to update your local state or trigger a refresh of the tweets list here
-        closePostModal();
+      const newTweet = await createTweet(event.detail.content);
+      console.log('New tweet created:', newTweet);
+      // You might want to update your local state or trigger a refresh of the tweets list here
+      closePostModal();
+      setTimeout(() => {
+        showSuccessModal = true;
+      }, 300); // Small delay to ensure post modal is closed
     } catch (error) {
-        console.error('Error creating tweet:', error);
-        // Handle the error (e.g., show an error message to the user)
+      console.error('Error creating tweet:', error);
+      // Handle the error (e.g., show an error message to the user)
     }
-}
+  }  
+  function closeSuccessModal() {
+    showSuccessModal = false;
+  }
 
 
   function handleLogout() {
@@ -137,4 +146,11 @@ async function handleTweet(event: CustomEvent) {
 
 {#if showPostModal}
   <PostModal on:close={closePostModal} on:tweet={handleTweet} />
+{/if}
+
+{#if showSuccessModal}
+  <SuccesModal 
+    message="Your tweet was sent successfully!" 
+    on:close={closeSuccessModal}
+  />
 {/if}
