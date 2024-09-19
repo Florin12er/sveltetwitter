@@ -9,6 +9,7 @@ export function requireAuth(event: LoadEvent) {
 	if (!currentToken) {
 		throw redirect(307, '/login');
 	}
+	localStorage.removeItem('token');
 }
 export function redirectIfAuthenticated(event: LoadEvent) {
 	const currentToken = get(token);
